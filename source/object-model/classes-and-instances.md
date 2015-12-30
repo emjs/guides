@@ -24,9 +24,11 @@ export default Ember.Component.extend({
 });
 ```
 
-Когда вы определяете подкласс, можете переопределить методы. При этом вы будете иметь доступ к реализации родительского класса, если вызовите специальный метод `_super()`:
+### Переопределение методов родительского класса
 
-```javascript
+При создании подкласса вы можете переопределить методы. При этом вы будете иметь доступ к реализации родительского класса, если вызовите специальный метод `_super()`:
+
+```js
 Person = Ember.Object.extend({
   say(thing) {
     var name = this.get('name');
@@ -38,7 +40,7 @@ Soldier = Person.extend({
   say(thing) {
     // this will call the method in the parent class (Person#say), appending
     // the string ', sir!' to the variable `thing` passed in
-    this._super(thing + ', sir!');
+    this._super(`${thing}, sir!`);
   }
 });
 
@@ -48,6 +50,24 @@ var yehuda = Soldier.create({
 
 yehuda.say('Yes'); // alerts "Yehuda Katz says: Yes, sir!"
 ```
+
+В некоторых случаях вы, возможно, захотите передать аргументы методу `_super()` до или после переопределения.
+
+Это позволяет исходному методу и дальше функционировать в нормальном режиме.
+
+В пример можно привести переопределение hook `normalizeResponse()` в одном из сериализаторов Ember Data.
+
+Здесь можно использовать полезное сокращение с помощью «оператора расширения» вроде `...arguments`:
+
+```js
+normalizeResponse(store, primaryModelClass, payload, id, requestType)  {
+  // Customize my JSON payload for Ember-Data
+  return this._super(...arguments);
+}
+```
+
+Пример выше возвращает исходные аргументы (после ваших настроек) родительскому классу, и класс продолжает функционировать в обычном режиме.
+
 
 ### Создание экземпляров
 
@@ -86,7 +106,7 @@ tom.helloWorld(); // alerts "Hi, my name is Tom Dale"
 Person = Ember.Object.extend({
   init() {
     var name = this.get('name');
-    alert(name + ', reporting for duty!');
+    alert(`${name}, reporting for duty!`);
   }
 });
 
@@ -98,11 +118,63 @@ Person.create({
 ```
 
 
-Если вы создаете подкласс для класса фреймворка вроде `Ember.Component` и переопределяете метод `init`, то обязательно вызывайте метод `this._super(...arguments)`! Если этого не сделать, то родительский класс не сможет выполнить настройку, и вы увидите странное поведение в приложении.
+Если вы создаете подкласс для класса фреймворка вроде `Ember.Component` и переопределяете метод `init()`, то обязательно вызывайте метод `this._super(...arguments)`! Если этого не сделать, то родительский класс не сможет выполнить настройку, и вы увидите странное поведение в приложении.
+
+Массивы и объекты, которые напрямую определены на любом `Ember.Object`, используются во всех экземплярах этого объекта.
+
+```js
+Person = Ember.Object.extend({
+  shoppingList: ['eggs', 'cheese']
+});
+
+Person.create({
+  name: 'Stefan Penner',
+  addItem() {
+    this.get('shoppingList').pushObject('bacon');
+  }
+});
+
+Person.create({
+  name: 'Robert Jackson',
+  addItem() {
+    this.get('shoppingList').pushObject('sausage');
+  }
+});
+
+// Stefan and Robert both trigger their addItem.
+// They both end up with: ['eggs', 'cheese', 'bacon', 'sausage']
+```
+
+Чтобы избежать такого поведения, рекомендуется инициализировать эти свойства массивов и объекта во время `init()`. Так можно гарантировать, что каждый экземпляр будет уникальным.
+
+```js
+Person = Ember.Object.extend({
+  init() {
+    this.set('shoppingList', ['eggs', 'cheese']);
+  }
+});
+
+Person.create({
+  name: 'Stefan Penner',
+  addItem() {
+    this.get('shoppingList').pushObject('bacon');
+  }
+});
+
+Person.create({
+  name: 'Robert Jackson',
+  addItem() {
+    this.get('shoppingList').pushObject('sausage');
+  }
+});
+
+// Stefan ['eggs', 'cheese', 'bacon']
+// Robert ['eggs', 'cheese', 'sausage']
+```
 
 ### Получение доступа к свойствам объекта
 
-Чтобы получить доступ к свойствам объекта, используйте методы доступа `get` и `set`:
+Чтобы получить доступ к свойствам объекта, используйте методы доступа `get()` и `set()`:
 
 ```js
 var person = Person.create();
