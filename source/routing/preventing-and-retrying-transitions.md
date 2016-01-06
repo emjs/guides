@@ -30,7 +30,7 @@ export default Ember.Route.extend({
 
 ### Сброс переходов в `model`, `beforeModel`, `afterModel`
 
-Hooks `model`, `beforeModel` и `afterModel`, описанные в разделе [Асинхронная маршрутизация](http://guides.emberjs.com/v2.1.0/routing/asynchronous-routing/), вызываются объектом перехода. Это позволяет маршрутам назначения сбрасывать переходы.
+Hooks `model`, `beforeModel` и `afterModel`, описанные в разделе [Асинхронная маршрутизация](http://emjs.ru/v2/routing/asynchronous-routing/), вызываются объектом перехода. Это позволяет маршрутам назначения сбрасывать переходы.
 
 `app/routes/disco.js`
 ```js

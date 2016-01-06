@@ -45,16 +45,16 @@ Router.map(function() {
 
 Ember по очереди будет искать в иерархии шаблон `routeName-loading` или `loading`, начиная с `foo.bar.slow-model-loading`:
 
-1. `slow-model-loading`
+1. `foo.bar.slow-model-loading`
 2. `foo.bar.loading` или `foo.bar-loading`
 3. `foo.loading` или `foo-loading`
 4. `loading` или `application-loading`
-
+  
 Важно отметить, что для самого `slow-model` Ember не будет искать шаблон `slow-model.loading`, но для остальной части иерархии допустим любой синтаксис. Это может быть полезно для создания индивидуального загрузочного экрана для крайнего маршрута вроде `slow-model`.
 
 ### Событие `loading`
 
-Если вы возвращаете обещание из hooks `beforeModel`/`model`/`afterModel`, и оно не разрешается сразу, на этом маршруте будет запущено событие `loading`.
+Если вы возвращаете обещание из hooks `beforeModel`/`model`/`afterModel`, и оно не разрешается сразу, на этом маршруте будет запущено событие [`loading`](http://emberjs.com/api/classes/Ember.Route.html#event_error).
 
 `app/routes/foo-slow-model.js`
 ```js
@@ -64,13 +64,32 @@ export default Ember.Route.extend({
   },
   actions: {
     loading(transition, originRoute) {
-      alert('Sorry this page is taking so long to load!');
+      let controller = this.controllerFor('foo');
+      controller.set('currentlyLoading', true);
     }
   }
 });
 ```
 
 Если обработчик `loading` не определен на конкретном маршруте, событие продолжит распространяться выше родительского маршрута перехода, предоставляя маршруту `application` возможность обработать его.
+
+При использовании обработчика `loading` мы можем применять обещание перехода, чтобы знать, когда загрузка события завершится:
+
+`app/routes/foo-slow-model.js`
+```js
+export default Ember.Route.extend({
+  ...
+  actions: {
+    loading(transition, originRoute) {
+      let controller = this.controllerFor('foo');
+      controller.set('currentlyLoading', true);
+      transition.promise.finally(function() {
+          controller.set('currentlyLoading', false);
+      });
+    }
+  }
+});
+```
 
 ## Подсостояния `error`
 
@@ -98,19 +117,19 @@ Router.map(function() {
 Если соответствующих подсостояний ошибки не обнаружено, в журнале будет записано сообщение об ошибке.
 
 ### Событие `error`
-
-Если hook `model` маршрута `articles.overview` возвращает обещание, которое завершено с ошибкой (например, сервер вернул ошибку, что пользователь не авторизовался, и т. д.), сработает событие `error`, которое распространится дальше. Это событие `error` можно обработать и использовать, чтобы отобразить сообщение об ошибке, перенаправить на страницу авторизации и т. д.
+ 
+Если hook `model` маршрута `articles.overview` возвращает обещание, которое завершено с ошибкой (например, сервер вернул ошибку, что пользователь не авторизовался, и т. д.), сработает событие [`error`](http://emberjs.com/api/classes/Ember.Route.html#event_error), которое распространится дальше. Это событие `error` можно обработать и использовать, чтобы отобразить сообщение об ошибке, перенаправить на страницу авторизации и т. д.
 
 `app/routes/articles-overview.js`
 ```js
 export default Ember.Route.extend({
   model(params) {
-    return this.store.findAll('nonexistentModel');
+    return this.store.findAll('problematicModel');
   },
   actions: {
     error(error, transition) {
-      if (error && error.status === 400) {
-        return this.transitionTo('modelNotFound');
+      if (error) {
+        return this.transitionTo('errorPage');
       }
     }
   }

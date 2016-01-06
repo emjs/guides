@@ -15,7 +15,7 @@ Router.map(function() {
 
 Каждый шаблон будет отображаться в `{{outlet}}` шаблона родительского маршрута. Например, маршрут `posts.new` отобразит свой шаблон в `{{outlet}}` `post.hbs`, а маршрут `posts` отобразит шаблон в `{{outlet}}` `application.hbs`.
 
-Если вы хотите отобразить какой-либо шаблон, за исключением исходного, выполните hook `renderTemplate`:
+Если вы хотите отобразить какой-либо шаблон, за исключением исходного, выполните hook [`renderTemplate()`](http://emberjs.com/api/classes/Ember.Route.html#method_renderTemplate):
 
 `app/routes/posts.js`
 ```js
