@@ -6,4 +6,4 @@
 
 В Ember также расширили встроенный прототип JavaScript `Array` интерфейсом [Ember.Enumerable](http://emberjs.com/api/classes/Ember.Enumerable.html), чтобы он отслеживал изменения в массивах.
 
-И еще в Ember расширили прототип `String` несколькими [методами разметки и локализации](http://emberjs.com/api/classes/Ember.String.html).
+И еще в Ember расширили прототип `String` несколькими [методами разметки и локализации](http://emberjs.com/api/classes/Ember.String.html). 

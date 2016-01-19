@@ -102,4 +102,4 @@ var captainAmerica = Person.create();
 captainAmerica.set('fullName', 'William Burnside');
 captainAmerica.get('firstName'); // William
 captainAmerica.get('lastName'); // Burnside
-```
+```   

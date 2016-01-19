@@ -49,11 +49,11 @@
 ```handlebars
 <a id="ember239" class="ember-view" href="#/photos">Photos</a>
 
-<input id="ember257" class="ember-view ember-text-field" type="text"
+<input id="ember257" class="ember-view ember-text-field" type="text" 
        title="Name">
 ```
 
-Чтобы разрешить поддержку атрибутов данных, привязка атрибутов должна быть добавлена к компоненту, например, `Ember.LinkComponent` или `Ember.TextField` для определенного атрибута:
+Чтобы разрешить поддержку атрибутов данных, привязка атрибутов должна быть добавлена к компоненту, например, [`Ember.LinkComponent`](http://emberjs.com/api/classes/Ember.LinkComponent.html) или [`Ember.TextField`](http://emberjs.com/api/classes/Ember.TextField.html) для определенного атрибута:
 
 ```javascript
 Ember.LinkComponent.reopen({

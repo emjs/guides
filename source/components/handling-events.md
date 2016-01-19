@@ -89,7 +89,7 @@ export default Ember.Component.extend({
 * `focusOut`
 * `mouseEnter`
 * `mouseLeave`
-
+ 
 События формы:
 
 * `submit`
