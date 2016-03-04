@@ -33,11 +33,13 @@ installing component-test
 
 `app/templates/index.hbs`
 ```hbs
-…
+<h1> Welcome to Super Rentals </h1>
+
+We hope you find exactly what you're looking for in a place to stay.
+
 {{#each model as |rentalUnit|}}
   {{rental-listing rental=rentalUnit}}
 {{/each}}
-…
 ```
 
 Здесь мы вызываем компонент `rental-listing` по наименованию и назначаем каждый `rentalUnit` в качестве атрибута `rental` компонента.
@@ -77,9 +79,16 @@ export default Ember.Component.extend({
 
 `app/templates/components/rental-listing.hbs`
 ```hbs
-...
-<button {{action "imageShow"}}>Show image</button>
-...
+<h2>{{rental.title}}</h2>
+<p>Owner: {{rental.owner}}</p>
+<p>Type: {{rental.type}}</p>
+<p>Location: {{rental.city}}</p>
+<p>Number of bedrooms: {{rental.bedrooms}}</p>
+{{#if isImageShowing}}
+  <p><img src={{rental.image}} alt={{rental.type}} width="500"></p>
+{{else}}
+  <button {{action "imageShow"}}>Show image</button>
+{{/if}}
 ```
 
 Нажатие кнопки отправит действие компоненту. Ember рассмотрит hash `actions` и вызовет функцию `imageShow`. Мы создадим функцию `imageShow` и установим `isImageShowing` в компоненте на `true`:

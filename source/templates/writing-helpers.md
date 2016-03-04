@@ -23,7 +23,7 @@ ember generate helper format-currency
 Этот файл должен экспортировать функцию, которая заключена в [`Ember.Helper.helper()`](http://emberjs.com/api/classes/Ember.Helper.html):
 
 ```js
-export default Ember.Helper.helper(function(params) {
+export function formatCurrency(params) {
   let value = params[0],
       dollars = Math.floor(value / 100),
       cents = value % 100,
@@ -31,7 +31,9 @@ export default Ember.Helper.helper(function(params) {
 
   if (cents.toString().length === 1) { cents = '0' + cents; }
   return `${sign}${dollars}.${cents}`;
-});
+}
+
+export default Ember.Helper.helper(formatCurrency);
 ```
 
 В этом примере функция получает количество долларов в центах в качестве первого параметра (`params[0]`). Затем мы используем стандартный JavaScript, чтобы преобразовать количество центов в оформленную строку вроде `"$5.00"`.

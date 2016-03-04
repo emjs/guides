@@ -53,9 +53,9 @@ Hook `model` возвращает наш массив *rentals* и переда�
 
 `app/templates/index.hbs`
 ```hbs
-<h1> Welcome to Super Rentals </h1>
+<h1>Welcome to Super Rentals</h1>
 
-We hope you find exactly what you're looking for in a place to stay.
+<p>We hope you find exactly what you're looking for in a place to stay.</p>
 
 {{#each model as |rental|}}
   <h2>{{rental.title}}</h2>
@@ -64,6 +64,9 @@ We hope you find exactly what you're looking for in a place to stay.
   <p>Location: {{rental.city}}</p>
   <p>Number of bedrooms: {{rental.bedrooms}}</p>
 {{/each}}
+
+{{#link-to "about"}}About{{/link-to}}
+{{#link-to "contact"}}Click here to contact us.{{/link-to}}
 ```
 
 В этом шаблоне мы проходим по каждому объекту модели и называем его *rental*. Для каждого rental мы в дальнейшем создадим перечень информации о недвижимости.

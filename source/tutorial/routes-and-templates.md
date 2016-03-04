@@ -4,7 +4,11 @@
 
 Мы видим домашнюю страницу, на которой размещен список с различной недвижимостью. Отсюда мы можем перейти в раздел about или contact.
 
-Для начала убедимся, что у нас создана новая программа под названием `super-rentals`. Для этого в Ember CLI наберите `ember new super-rentals`.
+Для начала убедимся, что у нас создана новая программа под названием `super-rentals`. Для этого в Ember CLI наберите:
+
+```bash
+ember new super-rentals
+```
 
 Прежде чем начать создание трех страниц для приложения, мы удалим содержимое файла `app/templates/application.hbs` и оставим вместо него только `{{outlet}}`. Мы более подробно поговорим о роли файла `application.hbs`, когда у сайта будет несколько маршрутов.
 
@@ -152,7 +156,11 @@ any questions you may have.</p>
 
 ```shell
 ember g route index
+```
 
+Мы видим знакомый результат работы генератора маршрутов
+
+```shell
 installing route
   create app/routes/index.js
   create app/templates/index.hbs
@@ -164,6 +172,7 @@ installing route-test
 
 Давайте обновим `index.hbs` и добавим код HTML для домашней страницы и ссылки на другие маршруты приложения:
 
+`app/templates/index.hbs`
 ```shell
 <h1>Welcome to Super Rentals</h1>
 
