@@ -1,28 +1,28 @@
-## Помощник `{{link-to}}`
+## Хелпер `{{link-to}}`
 
-Ссылку на маршрут можно создать с использованием помощника [`{{link-to}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_link-to).
+Ссылку на маршрут можно создать с помощью хелпера [`{{link-to}}`](emberjs.com/api/classes/Ember.Templates.helpers.html#method_link-to).
 
 `app/router.js`
-```javascript
+```js
 Router.map(function() {
-  this.route("photos", function(){
-    this.route("edit", { path: "/:photo_id" });
+  this.route('photos', function(){
+    this.route('edit', { path: '/:photo_id' });
   });
 });
 ```
 
 `app/templates/photos.hbs`
-```handlebars
+```hbs
 <ul>
   {{#each photos as |photo|}}
-    <li>{{#link-to 'photos.edit' photo}}{{photo.title}}{{/link-to}}</li>
+    <li>{{#link-to "photos.edit" photo}}{{photo.title}}{{/link-to}}</li>
   {{/each}}
 </ul>
 ```
 
-Если модель для шаблона `photos` представляет собой список из трех фотографий, отображенный код HTML будет выглядеть примерно так:
+Если модель шаблона `photos` представляет собой список из трех фото, отображенный код HTML будет выглядеть примерно так:
 
-```html
+```
 <ul>
   <li><a href="/photos/1">Happy Kittens</a></li>
   <li><a href="/photos/2">Puppy Running</a></li>
@@ -30,21 +30,21 @@ Router.map(function() {
 </ul>
 ```
 
-Помощник `{{link-to}}` принимает один или два аргумента:
+Хелпер `{{link-to}}` принимает один или два аргумента:
 
-* Имя маршрута. В этом примере, это будет `index`, `photos` или `photos.edit`.
-* И чаще всего одну модель для каждого [динамического сегмента](http://emjs.ru/v2/routing/defining-your-routes/#toc_dynamic-segments). По умолчанию, Ember.js заменит каждый сегмент значением свойства `id` соответствующего объекта. В примере выше второй аргумент — это каждый объект `photo`, а свойство `id` используется, чтобы заполнить динамический сегмент `1`, `2` или `3`. Если нет модели, чтобы передать помощнику, вместо нее можно использовать заданное значение:
+* Имя маршрута. В этом примере, это будет `index`, `photos` или `photos.edit`.
+* Чаще всего одну модель для каждого [динамического сегмента](https://guides.emberjs.com/v2.8.0/routing/defining-your-routes/#toc_dynamic-segments). По умолчанию, Ember.js заменит каждый сегмент значением свойства `id` соответствующего объекта. В примере выше второй аргумент — каждый объект `photo`, а свойство `id` используется, чтобы заполнить динамический сегмент `1`, `2` или `3`. Если нет модели, чтобы передать хелперу, вместо нее можно использовать заданное значение:
 
 `app/templates/photos.hbs`
-```handlebars
-{{#link-to 'photos.photo.edit' 1}}
+```hbs
+{{#link-to "photos.edit" 1}}
   First Photo Ever
 {{/link-to}}
 ```
 
-Когда представленная ссылка соответствует текущему маршруту, и тот же экземпляр объекта передается помощнику, тогда ссылке назначается `class="active"`. Например, если вы прошли по URL `/photos/2`, первый пример выше будет выглядеть так:
+Когда представленная ссылка соответствует текущему маршруту, и тот же экземпляр объекта передается хелперу, тогда ссылке назначается `class="active"`. Например, если вы прошли по URL `/photos/2`, первый пример выше будет выглядеть так:
 
-```html
+```
 <ul>
   <li><a href="/photos/1">Happy Kittens</a></li>
   <li><a href="/photos/2" class="active">Puppy Running</a></li>
@@ -52,37 +52,37 @@ Router.map(function() {
 </ul>
 ```
 
-### Пример для множественных сегментов
+## Пример для нескольких сегментов
 
 Если маршрут вложенный, то можно предоставить модель или идентификатор для каждого динамического сегмента.
 
 `app/router.js`
-```javascript
+```js
 Router.map(function() {
-  this.route("photos", function(){
-    this.route("photo", { path: "/:photo_id" }, function(){
-      this.route("comments");
-      this.route("comment", { path: "/comments/:comment_id" });
+  this.route('photos', function(){
+    this.route('photo', { path: '/:photo_id' }, function(){
+      this.route('comments');
+      this.route('comment', { path: '/comments/:comment_id' });
     });
   });
 });
 ```
 
 `app/templates/photo/index.hbs`
-```handlebars
+```hbs
 <div class="photo">
   {{body}}
 </div>
 
-<p>{{#link-to 'photos.photo.comment' primaryComment}}Main Comment{{/link-to}}</p>
+<p>{{#link-to "photos.photo.comment" primaryComment}}Main Comment{{/link-to}}</p>
 ```
 
-Если вы указываете только одну модель, она представит самый внутренний динамический сегмент `:comment_id`. Сегмент `:photo_id`  будет использовать текущее фото.
+Если вы указываете только одну модель, она представит внутренний динамический сегмент `:comment_id`. Сегмент `:photo_id`  будет использовать текущее фото.
 
-В качестве альтернативы, вы могли бы передать помощнику и ID фото и комментарий:
+В качестве альтернативы, вы могли бы передать хелперу ID фото и комментарий:
 
 `app/templates/photo/index.hbs`
-```handlebars
+```hbs
 <p>
   {{#link-to 'photo.comment' 5 primaryComment}}
     Main Comment for the Next Photo
@@ -90,43 +90,57 @@ Router.map(function() {
 </p>
 ```
 
-В примере выше hook модели для `PhotoRoute` запустится с `params.photo_id = 5`. Hook `model` для `CommentRoute` не запустится, пока вы предоставляете объект модели для сегмента `comment`. Идентификатор комментария заполнит URL в соответствии с hook `serialize` `CommentRoute`.
+В примере выше hook модели для `PhotoRoute` запустится с `params.photo_id = 5`.
+Hook `model` для `CommentRoute` не запустится, пока вы предоставляете объект модели для сегмента `comment`. Идентификатор комментария заполнит URL в соответствии с hook `serialize` в `CommentRoute`.
 
-### Использование link-to как строкового помощника
+## Настройка query-params
 
-Кроме использования в качестве блочного выражения, помощник [`link-to`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_link-to) можно применять в строковой форме. Для этого нужно определить текст ссылки как первый аргумент для помощника:
+Хелпер `query-params` можно использовать, чтобы установить параметры запроса для ссылки:
 
-```handlebars
-A link in {{#link-to 'index'}}Block Expression Form{{/link-to}},
-and a link in {{link-to 'Inline Form' 'index'}}.
+```hbs
+// Explicitly set target query params
+{{#link-to "posts" (query-params direction="asc")}}Sort{{/link-to}}
+
+// Binding is also supported
+{{#link-to "posts" (query-params direction=otherDirection)}}Sort{{/link-to}}
+```
+
+## Использование link-to как строкового хелпера
+
+Кроме использования в качестве блочного выражения, хелпер [`link-to`](emberjs.com/api/classes/Ember.Templates.helpers.html#method_link-to) можно применять в строковой форме. Для этого нужно указать текст ссылки как первый аргумент для хелпера:
+
+```hbs
+A link in {{#link-to "index"}}Block Expression Form{{/link-to}},
+and a link in {{link-to "Inline Form" "index"}}.
 ```
 
 Из примера выше мы получим:
 
 ```html
-A link in <a href='/'>Block Expression Form</a>,
-and a link in <a href='/'>Inline Form</a>.
+A link in <a href="/">Block Expression Form</a>,
+and a link in <a href="/">Inline Form</a>.
 ```
 
-### Добавление атрибутов для ссылки
+## Добавление атрибутов для ссылки
 
-При генерации ссылки, возможно, вам понадобится установить для нее дополнительные атрибуты. Это можно сделать с помощью дополнительных аргументов для `link-to` помощника:
+При генерации ссылки, вам может понадобится установить для нее дополнительные атрибуты. Это можно сделать с помощью дополнительных аргументов для хелпера `link-to`:
 
-```handlebars
+```hbs
 <p>
-  {{link-to 'Edit this photo' 'photo.edit' photo class="btn btn-primary"}}
+  {{link-to "Edit this photo" "photo.edit" photo class="btn btn-primary"}}
 </p>
 ```
 
-Многие из часто используемых свойств HTML, например, `class` и `rel`, будут работать. Когда вы добавите имена класса, Ember также применит стандарт `ember-view` и, возможно, имена класса `active`.
+Многие из часто используемых свойств HTML, например, `class` и `rel`, будут при этом работать.
+Когда вы добавите имена класса, Ember также применит стандарт `ember-view` и, возможно, имена класса `active`.
 
-### Замена записей в истории
+## Замена записей в истории
 
-Изначально заданное поведение для [`link-to`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_link-to) — это добавление записей в историю браузера при переходе между маршрутами. Но чтобы заменить текущую запись в истории браузера, можно использовать опцию `replace=true`:
+Изначально заданное поведение для [`link-to`](emberjs.com/api/classes/Ember.Templates.helpers.html#method_link-to) — добавление записей в историю браузера при переходе между маршрутами. Но чтобы заменить текущую запись в истории браузера, можно использовать опцию `replace=true`:
 
-```handlebars
+```hbs
 <p>
-  {{#link-to 'photo.comment' 5 primaryComment replace=true}}
+  {{#link-to "photo.comment" 5 primaryComment replace=true}}
     Main Comment for the Next Photo
   {{/link-to}}
 </p>

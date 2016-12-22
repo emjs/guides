@@ -1,10 +1,10 @@
-Вызов [`transitionTo()`](http://emberjs.com/api/classes/Ember.Route.html#method_redirect) из маршрута или [`transitionToRoute()`](http://emberjs.com/api/classes/Ember.Route.html#method_transitionToRoute) из контроллера остановит любой текущий переход и начнет новый, который сработает как переадресация. `transitionTo()` ведет себя точно так же, как помощник [link-to](http://emjs.ru/v2/templates/links).
+Вызов [`transitionTo()`](http://emberjs.com/api/classes/Ember.Route.html#method_transitionTo) из маршрута или [`transitionToRoute()`](http://emberjs.com/api/classes/Ember.Controller.html#method_transitionToRoute) из контроллера останавливает любой текущий переход и начинает новый, то есть действует как перенаправление. `transitionTo()` ведет себя точно так же, как хелпер [link-to](http://emjs.ru/v2/templates/links).
 
-Если новый маршрут содержит динамические сегменты, вам нужно передать либо модель, либо идентификатор для каждого сегмента. Передача модели проигнорирует hook `model()` сегмента (так как модель уже загружена).
+Если новый маршрут содержит динамические сегменты, вам нужно передать либо *модель*, либо *идентификатор* для каждого сегмента. Передача модели проигнорирует hook `model()` сегмента (так как модель уже загружена).
 
 ## Переход пока модель неизвестна
 
-Если вы хотите выполнить переадресацию с одного маршрута на другой, то можете выполнить переход в hook [`beforeModel()`](http://emberjs.com/api/classes/Ember.Route.html#method_redirect) вашего обработчика маршрута.
+Если вы хотите выполнить перенаправление с одного маршрута на другой, то можете выполнить переход в hook [`beforeModel()`](http://emberjs.com/api/classes/Ember.Route.html#method_beforeModel) вашего обработчика маршрута.
 
 `app/router.js`
 ```js
@@ -15,6 +15,8 @@ Router.map(function() {
 
 `app/routes/index.js`
 ```js
+import Ember from 'ember';
+
 export default Ember.Route.extend({
   beforeModel() {
     this.transitionTo('posts');
@@ -22,11 +24,11 @@ export default Ember.Route.extend({
 });
 ```
 
-Если вам нужно проверить некоторое состояние приложения, чтобы выяснить, куда перенаправлять, то можете использовать [сервис](http://emjs.ru/v2/applications/services/).
+Если вам нужно проверить какое-либо состояние приложения, чтобы понять, куда перенаправлять, можете использовать [службу](http://emjs.ru/v2/applications/services/).
 
 ## Переход когда модель известна
 
-Если вам нужна информация о текущей модели, чтобы принять решение о переадресации, вам следует использовать hook [`afterModel()`](http://emberjs.com/api/classes/Ember.Route.html#method_redirect). Он получают разрешенную модель в качестве первого параметра и переход — в качестве второго. Например:
+Если вам нужна информация о текущей модели, чтобы принять решение о перенаправлении, вам следует использовать hook [`afterModel()`](http://emberjs.com/api/classes/Ember.Route.html#method_afterModel). Он получают разрешенную модель в качестве первого параметра и переход — в качестве второго. Например:
 
 `app/router.js`
 ```js
@@ -38,6 +40,8 @@ Router.map(function() {
 
 `app/routes/posts.js`
 ```js
+import Ember from 'ember';
+
 export default Ember.Route.extend({
   afterModel(model, transition) {
     if (model.get('length') === 1) {
@@ -47,7 +51,7 @@ export default Ember.Route.extend({
 });
 ```
 
-Если при переходе к маршруту `posts` оказывается, что есть только один пост, текущий переход будет прерван для переадресации к `PostRoute` с объектом единичного поста, который выступает в качестве его модели.
+Если при переходе на маршрут `posts` окажется, что публикация всего одна, текущий переход прервется, и приложение перенаправит на `PostRoute` с объектом единственной публикации, который выступает в качестве его модели.
 
 ### Дочерние маршруты
 
@@ -62,12 +66,15 @@ Router.map(function() {
 });
 ```
 
-Если мы выполняем переадресацию на `posts.post` в hook `afterModel`, `afterModel` признает недействительной текущую попытку пройти по маршруту. Поэтому hooks `beforeModel`, `model`, и `afterModel` маршрута `posts` запустятся снова в пределах нового перенаправленного перехода. Это неэффективно, так как они запускаются только до переадресации.
+Если мы перенаправляем на `posts.post` в hook `afterModel`, `afterModel` признает недействительной текущую попытку пройти по маршруту. Поэтому hook  `beforeModel`, `model` и `afterModel` маршрута `posts` запустятся снова в рамках нового перенаправленного перехода.
+Это неэффективно, так как они запускаются до перенаправления.
 
-Вместо этого можно использовать метод [`redirect()`](http://emberjs.com/api/classes/Ember.Route.html#method_redirect), который оставит исходный переход действительным и не послужит причиной повторного запуска hooks родительского маршрута:
+Вместо этого можно использовать метод [`redirect()`](http://emberjs.com/api/classes/Ember.Route.html#method_redirect), который признает исходный переход действительным и не станет причиной повторного запуска hooks родительского маршрута:
 
 `app/routes/posts.js` 
 ```js
+import Ember from 'ember';
+
 export default Ember.Route.extend({
   redirect(model, transition) {
     if (model.get('length') === 1) {

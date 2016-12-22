@@ -1,4 +1,4 @@
-Одна из главных задач обработчика маршрута — это отображение нужного шаблона на экране.
+Одна из задач обработчика маршрута — это отображение нужного шаблона на экране.
 
 По умолчанию, обработчик маршрута отобразит шаблон с тем же именем, что имеет маршрут. Возьмем такой маршрут:
 
@@ -15,13 +15,15 @@ Router.map(function() {
 
 Каждый шаблон будет отображаться в `{{outlet}}` шаблона родительского маршрута. Например, маршрут `posts.new` отобразит свой шаблон в `{{outlet}}` `post.hbs`, а маршрут `posts` отобразит шаблон в `{{outlet}}` `application.hbs`.
 
-Если вы хотите отобразить какой-либо шаблон, за исключением исходного, выполните hook [`renderTemplate()`](http://emberjs.com/api/classes/Ember.Route.html#method_renderTemplate):
+Если вы хотите отобразить шаблон отличный от исходного, установите свойство [`templateName`](http://emberjs.com/api/classes/Ember.Route.html#property_templateName) маршрута с именем шаблона, который хотите отобразить вместо исходного.
 
 `app/routes/posts.js`
 ```js
+import Ember from 'ember';
+
 export default Ember.Route.extend({
-  renderTemplate() {
-    this.render('favoritePosts');
-  }
+  templateName: 'posts/favorite-posts'
 });
 ```
+
+Вы можете переопределить hook [`renderTemplate()`](http://emberjs.com/api/classes/Ember.Route.html#method_renderTemplate), если хотите получить больший контроль над отображением шаблона. Помимо прочего, это позволяет вам выбрать контроллер для настройки шаблона и особый заполнитель, в котором он будет отображен.

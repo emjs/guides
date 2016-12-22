@@ -1,156 +1,245 @@
-При поиске недвижимости пользователи явно хотели бы сузить круг, указав конкретный город. Давайте создадим компонент, который позволит им искать недвижимость в пределах определенного города и будет предлагать им варианты по мере набора текста.
+При поиске недвижимости у пользователей должна быть возможность сузить круг до конкретного города.
+Создадим компонент, который позволит им фильтровать недвижимость по определенному городу.
 
-Для начала сгенерируем новый компонент. Мы назовем его `filter-listing`.
+Для начала сгенерируем новый компонент. Мы назовем этот компонент `list-filter`, так как хотим, чтобы он фильтровал список недвижимости на основе текста в поле ввода.
 
-```bash
-ember g component filter-listing
+```
+ember g component list-filter
 ```
 
-В итоге мы получим шаблон Handlebars (`app/templates/components/filter-listing.hbs`) и файл JavaScript (`app/components/filter-listing.js`).
+В итоге мы получим шаблон Handlebars (`app/templates/components/list-filter.hbs`), файл JavaScript (`app/components/list-filter.js`) и интеграционный тест компонента (`tests/integration/components/list-filter-test.js`).
 
-Шаблон Handlebars выглядит следующим образом:
+Начнем с написания тестов, которые помогут продумать план действий. Компонент для фильтрации должен предоставить список отсортированных элементов и отобразить его в своем внутреннем блоке шаблона.
+Нам нужно, чтобы компонент вызывал два действия: предоставлял список всех элементов, когда нет фильтрации, и искал позиции по городу.
 
-`app/templates/components/filter-listing.hbs`
-```hbs
-City: {{input value=filter key-up=(action 'autoComplete' filter)}} 
-<button {{action 'search'}}>Search</button>
+Для изначального теста мы проверим, чтобы все предоставленные нами города отображались и объект списка был доступен из шаблона.
 
-<ul>
-{{#each filteredList as |item|}}
-  <li {{action 'choose' item.city}}>{{item.city}}</li>
-{{/each}}
-</ul>
-```
+Так как мы планируем использовать Ember Data в качестве хранилища модели, нам нужно, чтобы при вызовах действий данные запрашивались асинхронно. Поэтому мы будем возвращать обещания. Так как доступ к сохраненным данным обычно осуществляется асинхронно, нам нужно добавить хелпер wait в конец теста. Он будет ждать разрешения всех обещаний, прежде чем завершить тест.
 
-Он содержит хелпер [`{{input}}`](/v2/templates/input-helpers), который отображается как текстовое поле. В нем пользователь может набирать текст для поиска недвижимости в конкретном городе. Свойство `value` у `input` будет связано со свойством `filter` в нашем компоненте. Свойство `key-up` будет связано с действием `autoComplete` в базовом объекте и передавать свойство `filter` как параметр.
-
-Шаблон также содержит кнопку, чей параметр `action` связан с действием `search` в нашем компоненте.
-
-Наконец, он содержит неупорядоченный список, который использует свойство `filteredList` для данных и отображает свойство `city` каждого элемента в списке. Нажатие на элемент списка запустит действие `choose`, которое заполнит поле `input`наименованием `city` (города) выбранного элемента.
-
-Вот как выглядит JavaScript компонента:
-
-`app/components/filter-listing.js`
+`tests/integration/components/list-filter-test.js`
 ```js
+import { moduleForComponent, test } from 'ember-qunit';
+import hbs from 'htmlbars-inline-precompile';
+import wait from 'ember-test-helpers/wait';
+import RSVP from 'rsvp';
+
+moduleForComponent('list-filter', 'Integration | Component | filter listing', {
+  integration: true
+});
+
+const ITEMS = [{city: 'San Francisco'}, {city: 'Portland'}, {city: 'Seattle'}];
+const FILTERED_ITEMS = [{city: 'San Francisco'}];
+
+test('should initially load all listings', function (assert) {
+  // we want our actions to return promises, since they are potentially fetching data asynchronously
+  this.on('filterByCity', (val) => {
+    if (val === '') {
+      return RSVP.resolve(ITEMS);
+    } else {
+      return RSVP.resolve(FILTERED_ITEMS);
+    }
+  });
+
+  // with an integration test, you can set up and use your component in the same way your application 
+  // will use it.
+  this.render(hbs`
+    {{#list-filter filter=(action 'filterByCity') as |results|}}
+      <ul>
+      {{#each results as |item|}}
+        <li class="city">
+          {{item.city}}
+        </li>
+      {{/each}}
+      </ul>
+    {{/list-filter}}
+  `);
+
+  // the wait function will return a promise that will wait for all promises 
+  // and xhr requests to resolve before running the contents of the then block.
+  return wait().then(() => {
+    assert.equal(this.$('.city').length, 3);
+    assert.equal(this.$('.city').first().text().trim(), 'San Francisco');
+  });
+});
+```
+
+Во втором тесте мы проверим, чтобы введенный в поле текст запускал фильтрацию и обновлял списки.
+
+Чтобы запустить действие, мы сгенерируем событие `keyUp` для поля ввода, а затем удостоверимся, что отображен только один элемент.
+
+`tests/integration/components/list-filter-test.js`
+```js
+test('should update with matching listings', function (assert) {
+  this.on('filterByCity', (val) => {
+    if (val === '') {
+      return RSVP.resolve(ITEMS);
+    } else {
+      return RSVP.resolve(FILTERED_ITEMS);
+    }
+  });
+
+  this.render(hbs`
+    {{#list-filter filter=(action 'filterByCity') as |results|}}
+      <ul>
+      {{#each results as |item|}}
+        <li class="city">
+          {{item.city}}
+        </li>
+      {{/each}}
+      </ul>
+    {{/list-filter}}
+  `);
+
+  // The keyup event here should invoke an action that will cause the list to be filtered
+  this.$('.list-filter input').val('San').keyup();
+
+  return wait().then(() => {
+    assert.equal(this.$('.city').length, 1);
+    assert.equal(this.$('.city').text().trim(), 'San Francisco');
+  });
+});
+```
+
+Далее, в файл `app/templates/rentals.hbs` мы добавим новый компонент `list-filter`; так же, как делали в нашем тесте. Вместо того чтобы просто показывать город, мы будем использовать компонент `rental-listing`, чтобы отобразить информацию о недвижимости.
+
+`app/templates/rentals.hbs`
+```hbs
+<div class="jumbo">
+  <div class="right tomster"></div>
+  <h2>Welcome!</h2>
+  <p>
+    We hope you find exactly what you're looking for in a place to stay.
+    <br>Browse our listings, or use the search box above to narrow your search.
+  </p>
+  {{#link-to 'about' class="button"}}
+    About Us
+  {{/link-to}}
+</div>
+
+{{#list-filter
+   filter=(action 'filterByCity')
+   as |rentals|}}
+  <ul class="results">
+    {{#each rentals as |rentalUnit|}}
+      <li>{{rental-listing rental=rentalUnit}}</li>
+    {{/each}}
+  </ul>
+{{/list-filter}}
+```
+
+Теперь, когда у нас есть заведомо провальные тесты и понимание того, каким должен быть компонент, начнем его реализацию. Нам нужно, чтобы в компоненте было поле ввода и он предоставлял список с результатами в своем блоке. Поэтому шаблон будет простым:
+
+`app/templates/components/list-filter.hbs`
+```hbs
+{{input value=value key-up=(action 'handleFilterEntry') class="light" placeholder="Filter By City"}}
+{{yield results}}
+```
+
+Шаблон содержит хелпер [`{{input}}`](http://emjs.ru/v2/templates/input-helpers/), который отображается как текстовое поле. В нем пользователь может набрать текстовый шаблон и отфильтровать по нему недвижимость. Свойство `value` в `input` будет связано со свойством `value` в компоненте.
+Свойство `key-up` будет связано с действием `handleFilterEntry`.
+
+Так выглядит JavaScript компонента:
+
+`app/components/list-filter.js`
+```js
+import Ember from 'ember';
+
 export default Ember.Component.extend({
-  filter: null,
-  filteredList: null,
+  classNames: ['list-filter'],
+  value: '',
+
+  init() {
+    this._super(...arguments);
+    this.get('filter')('').then((results) => this.set('results', results));
+  },
+
   actions: {
-    autoComplete() {
-      this.get('autoComplete')(this.get('filter'));
-    },
-    search() {
-      this.get('search')(this.get('filter'));
-    },
-    choose(city) {
-      this.set('filter', city);
+    handleFilterEntry() {
+      let filterInputValue = this.get('value');
+      let filterAction = this.get('filter');
+      filterAction(filterInputValue).then((filterResults) => this.set('results', filterResults));
     }
   }
+
 });
 ```
 
-Как описано выше, для каждого `filter` и `filteredList` есть свойство и действия.  Любопытно, что только действие `choose` определяется компонентом. Фактическая логика каждого действия `autoComplete` и `search` извлекается из свойств компонента. Это значит, что эти действия [передаются](/v2/components/triggering-changes-with-actions/#toc_passing-the-action-to-the-component) при вызове объекта. Эта модель известна как *замкнутые действия*.
+Мы используем hook `init`, чтобы отобразить изначальные позиции при вызове действия `filter` с пустым значением. Действие `handleFilterEntry` запускает фильтрацию на основе атрибута `value`, заданного хелпером input.
 
-Чтобы посмотреть, как это работает, изменим шаблон `index.hbs` таким образом:
+Вызывающий объект [передает](http://emjs.ru/v2/components/triggering-changes-with-actions/) действие `filter`. Такая схема называется *замкнутым действием*.
 
-`app/templates/index.hbs`
-```hbs
-<h1>Welcome to Super Rentals</h1>
+Чтобы реализовать эти действия, мы создадим контроллер `rentals` для приложения. Контроллер index будет задействован, когда пользователь перейдет по исходному маршруту (index) приложения.
 
-We hope you find exactly what you're looking for in a place to stay.
-<br /><br />
-{{filter-listing filteredList=filteredList 
-autoComplete=(action 'autoComplete') search=(action 'search')}}
-{{#each model as |rentalUnit|}}
-  {{rental-listing rental=rentalUnit}}
-{{/each}}
+Сгенерируйте контроллер для страницы `rentals`, запустив следующее:
 
-{{#link-to 'about'}}About{{/link-to}}
-{{#link-to 'contact'}}Click here to contact us.{{/link-to}}
+```
+ember g controller rentals
 ```
 
-Мы добавляем компонент `filter-listing` к шаблону `index.hbs`. Затем мы передаем функции и свойства, которые будет использовать компонент `filter-listing`, чтобы страница `index` могла определять некоторую часть поведения компонента, и чтобы компонент мог использовать специфические функции и свойства.
+Теперь определяем новый контроллер так:
 
-Чтобы все это работало, нам нужно ввести в приложение контроллер. Генерируем контроллер для страницы `index`, запустив следующее:
-
-```bash
-ember g controller index
-```
-
-Теперь определяем наш новый контроллер так:
-
-`app/controllers/index.js`
+`app/controllers/rentals.js`
 ```js
+import Ember from 'ember';
+
 export default Ember.Controller.extend({
-  filteredList: null,
   actions: {
-    autoComplete(param) {
-      if(param !== "") {
-        this.store.query('rental', {city: param}).then((result) => {
-          this.set('filteredList',result);
-        });
+    filterByCity(param) {
+      if (param !== '') {
+        return this.get('store').query('rental', { city: param });
       } else {
-        this.set('filteredList').clear();
-      }
-    },
-    search(param) {
-      if(param !== "") {
-        this.store.query('rental', {city: param}).then((result) => {
-          this.set('model',result);
-        });
-      } else {
-        this.set('model').clear();
+        return this.get('store').findAll('rental');
       }
     }
   }
 });
 ```
 
-Как вы можете видеть, мы определяем свойство в контроллере под названием `filteredList`, к которому обращаются из действия `autoComplete`. Это действие вызывается, когда пользователь набирает текст в поле компонента. Оно фильтрует данные `rental`, чтобы найти в них записи, которые соответствуют тому, что пользователь уже набрал в поле. Когда действие выполняется, результат запроса помещается в свойство `filteredList`, которое используется, чтобы заполнить список автозавершения компонента.
+Когда пользователь набирает текст в поле компонента, в контроллере вызывается действие `filterByCity`. Это действие берет свойство `value` и фильтрует данные `rental` в хранилище в поисках записей, которые соответствуют тому, что ввел пользователь. Результат запроса возвращается инициатору вызова.
 
-Мы также определяем здесь действие `search`, которое передается компоненту и вызывается, когда нажимают на кнопку поиска. Разница в том, что результат запроса используется, чтобы обновить модель маршрута `index`, и это меняет весь список недвижимости на странице.
+Чтобы это действие работало, нам нужно изменить файл Mirage `config.js`, чтобы он смог отвечать на запросы.
 
-Чтобы эти действия работали, нам нужно подкорректировать файл Mirage `config.js`. Так он сможет отвечать на запросы.
-
-`app/mirage/config.js`
+`mirage/config.js`
 ```js
 export default function() {
-  this.get('/rentals', function(db, request) {
-    let rentals = [{
-        type: 'rentals',
-        id: 1,
-        attributes: {
-          title: 'Grand Old Mansion',
-          owner: 'Veruca Salt',
-          city: 'San Francisco',
-          type: 'Estate',
-          bedrooms: 15,
-          image: 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Crane_estate_(5).jpg'
-        }
-      }, {
-        type: 'rentals',
-        id: 2,
-        attributes: {
-          title: 'Urban Living',
-          owner: 'Mike Teavee',
-          city: 'Seattle',
-          type: 'Condo',
-          bedrooms: 1,
-          image: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Alfonso_13_Highrise_Tegucigalpa.jpg'
-        }
-      }, {
-        type: 'rentals',
-        id: 3,
-        attributes: {
-          title: 'Downtown Charm',
-          owner: 'Violet Beauregarde',
-          city: 'Portland',
-          type: 'Apartment',
-          bedrooms: 3,
-          image: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Wheeldon_Apartment_Building_-_Portland_Oregon.jpg'
-        }
-      }];
+  this.namespace = '/api';
 
+  let rentals = [{
+      type: 'rentals',
+      id: 'grand-old-mansion',
+      attributes: {
+        title: 'Grand Old Mansion',
+        owner: 'Veruca Salt',
+        city: 'San Francisco',
+        type: 'Estate',
+        bedrooms: 15,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Crane_estate_(5).jpg'
+      }
+    }, {
+      type: 'rentals',
+      id: 'urban-living',
+      attributes: {
+        title: 'Urban Living',
+        owner: 'Mike Teavee',
+        city: 'Seattle',
+        type: 'Condo',
+        bedrooms: 1,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Alfonso_13_Highrise_Tegucigalpa.jpg'
+      }
+    }, {
+      type: 'rentals',
+      id: 'downtown-charm',
+      attributes: {
+        title: 'Downtown Charm',
+        owner: 'Violet Beauregarde',
+        city: 'Portland',
+        type: 'Apartment',
+        bedrooms: 3,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Wheeldon_Apartment_Building_-_Portland_Oregon.jpg'
+      }
+    }];
+
+  this.get('/rentals', function(db, request) {
     if(request.queryParams.city !== undefined) {
       let filteredRentals = rentals.filter(function(i) {
         return i.attributes.city.toLowerCase().indexOf(request.queryParams.city.toLowerCase()) !== -1;
@@ -163,4 +252,7 @@ export default function() {
 }
 ```
 
-С помощью этих изменений пользователи смогут искать недвижимость в пределах конкретного города, а в поле ввода будут появляться варианты по мере набора текста.  
+После обновления настроек Mirage тесты будут пройдены, а мы увидим простой фильтр на главной странице, который обновляет список недвижимости при введении текста в поле:
+
+![styled super rentals filter](https://guides.emberjs.com/v2.7.0/images/autocomplete-component/styled-super-rentals-filter.png)
+![passing acceptance tests](https://guides.emberjs.com/v2.7.0/images/autocomplete-component/passing-acceptance-tests.png)

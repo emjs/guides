@@ -1,8 +1,8 @@
 Кроме обычного текста, возможно, вам понадобится, чтобы шаблоны содержали элементы HTML, чьи атрибуты связаны с контроллером.
 
-Например, представьте, что ваш контроллер имеет свойство, которое содержит URL на изображение:
+Например, представьте, что ваш контроллер имеет свойство, которое содержит URL изображения:
 
-```handlebars
+```hbs
 <div id="logo">
   <img src={{logoUrl}} alt="Logo">
 </div>
@@ -16,29 +16,29 @@
 </div>
 ```
 
-Если вы используете данные, которые связаны с булевым значением, это добавит или удалит определенный атрибут. Например, есть такой шаблон:
+Если вы используете данные, которые связаны с булевым значением, это добавит или удалит определенный атрибут. Например, возьмем такой шаблон:
 
-```handlebars
+```hbs
 <input type="checkbox" disabled={{isAdministrator}}>
 ```
 
-Если `isAdministrator` — `true`, Handlebars сформирует следующий элемент HTML:
+Если `isAdministrator` = `true`, Handlebars представит следующий элемент HTML:
 
 ```html
 <input type="checkbox" disabled>
 ```
 
-Если `isAdministrator` — `false`, Handlebars сформирует следующее:
+Если `isAdministrator` = `false`, Handlebars представит следующее:
 
 ```html
 <input type="checkbox">
 ```
 
-### Добавление атрибутов данных
+## Добавление атрибутов данных
 
-По умолчанию, помощники представления (view) не принимают *атрибуты данных*. Например
+По умолчанию хелперы и компоненты не принимают атрибуты данных. Например,
 
-```handlebars
+```hbs
 {{#link-to "photos" data-toggle="dropdown"}}Photos{{/link-to}}
 
 {{input type="text" data-toggle="tooltip" data-placement="bottom" title="Name"}}
@@ -46,16 +46,16 @@
 
 генерирует следующий код HTML:
 
-```handlebars
+```html
 <a id="ember239" class="ember-view" href="#/photos">Photos</a>
 
-<input id="ember257" class="ember-view ember-text-field" type="text" 
+<input id="ember257" class="ember-view ember-text-field" type="text"
        title="Name">
 ```
 
-Чтобы разрешить поддержку атрибутов данных, привязка атрибутов должна быть добавлена к компоненту, например, [`Ember.LinkComponent`](http://emberjs.com/api/classes/Ember.LinkComponent.html) или [`Ember.TextField`](http://emberjs.com/api/classes/Ember.TextField.html) для определенного атрибута:
+Чтобы разрешить поддержку атрибутов данных, нужно добавить компоненту привязку к атрибуту, например, [`Ember.LinkComponent`](http://emberjs.com/api/classes/Ember.LinkComponent.html) или [`Ember.TextField`](http://emberjs.com/api/classes/Ember.TextField.html) для определенного атрибута:
 
-```javascript
+```js
 Ember.LinkComponent.reopen({
   attributeBindings: ['data-toggle']
 });
@@ -65,7 +65,7 @@ Ember.TextField.reopen({
 });
 ```
 
-Теперь тот же код handlebars, что мы видели выше, отобразит следующий код HTML:
+Теперь тот же шаблон, что мы видели выше, отобразит следующий код HTML:
 
 ```html
 <a id="ember240" class="ember-view" href="#/photos" data-toggle="dropdown">Photos</a>

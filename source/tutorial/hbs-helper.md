@@ -1,14 +1,15 @@
-Сейчас наше приложение напрямую показывает данные пользователя из моделей Ember Data. По мере расширения приложения, вам захочется воздействовать на данные до их отображения пользователям. И для этого Ember предоставляет хелперы шаблонов Handlebars. Они позволяют оформлять данные в шаблонах. Давайте используем хелпер handlebars, чтобы дать пользователю возможность бегло посмотреть, стоит ли свойство "Standalone" или "Community".
+Сейчас наше приложение напрямую показывает данные пользователя из моделей Ember Data. По мере расширения приложения, вам захочется манипулировать данными до их отображения пользователям. Для этого Ember предоставляет хелперы шаблонов Handlebars. Они позволяют оформлять данные в шаблонах.
+Используем хелпер handlebars, чтобы дать пользователю возможность быстро посмотреть, является ли недвижимость Standalone (обособленной) или Community (частью жилого района).
 
-Для начала давайте сгенерируем хелпер для `rental-property-type`:
+Для начала сгенерируем хелпер для `rental-property-type`:
 
-```bash
+```
 ember g helper rental-property-type
 ```
 
-Так мы создадим хелпер и его тест:
+Так мы создадим два файла, хелпер и его тест:
 
-```bash
+```
 installing helper
   create app/helpers/rental-property-type.js
 installing helper-test
@@ -28,24 +29,32 @@ export function rentalPropertyType(params/*, hash*/) {
 export default Ember.Helper.helper(rentalPropertyType);
 ```
 
-Давайте обновим шаблон компонента `rental-listing`, чтобы использовать новый хелпер и передавать `rental.type`:
+Обновим шаблон компонента `rental-listing`, чтобы использовать новый хелпер и передавать `rental.type`:
 
 `app/templates/components/rental-listing.hbs`
 ```hbs
-<h2>{{rental.title}}</h2>
-<p>Owner: {{rental.owner}}</p>
-<p>Type: {{rental-property-type rental.type}} - {{rental.type}}</p>
-<p>Location: {{rental.city}}</p>
-<p>Number of bedrooms: {{rental.bedrooms}}</p>
-{{#if isImageShowing }}
-  <p><img src={{rental.image}} alt={{rental.type}} width="500px"></p>
-  <button {{action "imageHide"}}>Hide image</button>
-{{else}}
-  <button {{action "imageShow"}}>Show image</button>
-{{/if}}
+<article class="listing">
+  <a {{action 'toggleImageSize'}} class="image {{if isWide "wide"}}">
+    <img src="{{rental.image}}" alt="">
+    <small>View Larger</small>
+  </a>
+  <h3>{{rental.title}}</h3>
+  <div class="detail owner">
+    <span>Owner:</span> {{rental.owner}}
+  </div>
+  <div class="detail type">
+    <span>Type:</span> {{rental-property-type rental.type}} - {{rental.type}}
+  </div>
+  <div class="detail location">
+    <span>Location:</span> {{rental.city}}
+  </div>
+  <div class="detail bedrooms">
+    <span>Number of bedrooms:</span> {{rental.bedrooms}}
+  </div>
+</article>
 ```
 
-В идеале мы увидим "Type: Standalone - Estate" для первой арендуемой недвижимости. Наш исходный хелпер шаблона возвращает значения `rental.type`. Давайте обновим хелпер так, чтобы проверять, есть ли свойство в массиве `communityPropertyTypes`, и если оно есть, то вернется `'Community'` или `'Standalone'`:
+В идеале мы увидим Type: Standalone - Estate (Тип: Обособленный — Участок) для первой арендуемой недвижимости. Вместо этого наш исходный хелпер шаблона возвращает значения `rental.type`. Обновим хелпер, чтобы посмотреть, есть ли свойство в массиве `communityPropertyTypes`, и если есть, мы вернем `Community` или `Standalone`:
 
 `app/helpers/rental-property-type.js`
 ```js
@@ -58,7 +67,7 @@ const communityPropertyTypes = [
 ];
 
 export function rentalPropertyType([type]/*, hash*/) {
-  if (communityPropertyTypes.contains(type)) {
+  if (communityPropertyTypes.includes(type)) {
     return 'Community';
   }
 
@@ -68,6 +77,6 @@ export function rentalPropertyType([type]/*, hash*/) {
 export default Ember.Helper.helper(rentalPropertyType);
 ```
 
-Handlebars передает хелперу массив аргументов из шаблона. Мы используем структурирование ES2015, чтобы получить первый элемент массива и назначить ему `type`. Затем мы можем проверить, существует ли `type` в массиве `communityPropertyTypes`.
+Handlebars передает хелперу массив аргументов из шаблона. Мы используем деструктурирование ES2015, чтобы получить первый элемент массива и назначить ему `type`. Затем мы можем проверить, существует ли `type` в массиве `communityPropertyTypes`.
 
-Теперь в нашем браузере мы должны увидеть, что первая недвижимость значится как "Standalone", а другие две как "Community".
+Теперь в нашем браузере мы должны увидеть, что первая недвижимость отображается как Standalone, а другие две — как Community.

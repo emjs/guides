@@ -1,42 +1,42 @@
-Если вам нужно отобразить все ключи или значения объекта JavaScript в шаблоне, то можно использовать помощника [`{{#each-in}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in):
+Если вам нужно отобразить все ключи или значения объекта JavaScript в шаблоне, то можно использовать хелпер [`{{#each-in}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in):
 
 `/app/components/store-categories.js`
-```javascript
-import Component from "ember-component";
+```js
+import Ember from 'ember';
 
-export Component.extend({
+export default Ember.Component.extend({
   willRender() {
     // Set the "categories" property to a JavaScript object
     // with the category name as the key and the value a list
     // of products.
     this.set('categories', {
-      "Bourbons": ["Bulleit", "Four Roses", "Woodford Reserve"],
-      "Ryes": ["WhistlePig", "High West"]
+      'Bourbons': ['Bulleit', 'Four Roses', 'Woodford Reserve'],
+      'Ryes': ['WhistlePig', 'High West']
     });
   }
 });
 ```
 
 `/app/templates/components/store-categories.hbs`
-```handlebars
+```hbs
 <ul>
-  {{#each-in categories as |category, products|}}
+  {{#each-in categories as |category products|}}
     <li>{{category}}
       <ol>
-        {{#each products key="@item" as |product|}}
+        {{#each products as |product|}}
           <li>{{product}}</li>
         {{/each}}
       </ol>
     </li>
-  {{/each}}
+  {{/each-in}}
 </ul>
 ```
 
-Шаблон внутри блока `{{#each-in}}` повторяется для каждого ключа в переданном объекте. Первый блок с параметром (`category` в примере выше) — ключ для этой итерации, а второй блок с параметром (`product`) — фактическое значение этого ключа.
+Шаблон внутри блока `{{#each-in}}` повторяется один раз для каждого ключа в переданном объекте. Первый блочный параметр (`category` в примере выше) — ключ для этой итерации, а второй блочный параметр (`products`) — фактическое значение этого ключа.
 
 Пример выше покажет подобный список:
 
-```html
+```
 <ul>
   <li>Bourbons
     <ol>
@@ -54,17 +54,19 @@ export Component.extend({
 </ul>
 ```
 
-### Повторное отображение
+## Повторное отображение
 
-Помощник [`{{#each-in}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in) **не отслеживает изменения свойства** в объекте, который ему передается. В примере выше, если вы добавите ключ к свойству компонента `categories` после того, как отобразится компонент, шаблон автоматически **не** обновится.
+Хелпер [`{{#each-in}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in) **не отслеживает изменения свойства** в переданном ему объекте. В примере выше, если вы добавите ключ к свойству компонента `categories` после того, как отобразится компонент, шаблон автоматически **не** обновится.
 
 `/app/components/store-categories.js`
-```javascript
-export Component.extend({
+```js
+import Ember from 'ember';
+
+export default Ember.Component.extend({
   willRender() {
     this.set('categories', {
-      "Bourbons": ["Bulleit", "Four Roses", "Woodford Reserve"],
-      "Ryes": ["WhistlePig", "High West"]
+      'Bourbons': ['Bulleit', 'Four Roses', 'Woodford Reserve'],
+      'Ryes': ['WhistlePig', 'High West']
     });
   },
 
@@ -78,15 +80,17 @@ export Component.extend({
 });
 ```
 
-Чтобы компонент отобразился по-новому после добавления, удаления или изменения свойства из объекта, нужно выполнить [`set()`](http://emberjs.com/api/classes/Ember.Component.html#method_set) свойство компонента еще раз или вручную запустить повторное отображение через [`rerender()`](http://emberjs.com/api/classes/Ember.Component.html#method_rerender):
+Чтобы повторно отобразить компонент после добавления, удаления или изменения свойства из объекта, нужно снова назначить свойство компонента с помощью [`set()`](http://emberjs.com/api/classes/Ember.Component.html#method_set) или вручную запустить повторное отображение через [`rerender()`](http://emberjs.com/api/classes/Ember.Component.html#method_rerender):
 
 `/app/components/store-categories.js`
-```javascript
-export Component.extend({
+```js
+import Ember from 'ember';
+
+export default Ember.Component.extend({
   willRender() {
     this.set('categories', {
-      "Bourbons": ["Bulleit", "Four Roses", "Woodford Reserve"],
-      "Ryes": ["WhistlePig", "High West"]
+      'Bourbons': ['Bulleit', 'Four Roses', 'Woodford Reserve'],
+      'Ryes': ['WhistlePig', 'High West']
     });
   },
 
@@ -102,18 +106,17 @@ export Component.extend({
 });
 ```
 
-### Упорядочение
+## Упорядочение
 
-Ключи объекта будут представлены в том же порядке, что и в возвращенном массиве после вызова `Object.keys` на этом объекте. Если вам нужен другой порядок, то следует использовать `Object.keys`, чтобы получить массив, отсортировать его с помощью встроенных инструментов JavaScript и использовать помощника [`{{#each}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in).
+Ключи объекта будут представлены в том же порядке, что и в возвращенном массиве после вызова `Object.keys` для этого объекта. Если вам нужен другой порядок, то следует использовать `Object.keys`, чтобы получить массив, отсортировать его с помощью встроенных инструментов JavaScript и использовать хелпер [`{{#each}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in).
 
-### Пустые списки
+## Пустые списки
+Хелпер [`{{#each-in}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in) может иметь соответствующий `{{else}}`. Если объект пустой, несуществующий или неопределенный, то будет отображено содержимое этого блока:
 
-Помощник [`{{#each-in}}`](http://emberjs.com/api/classes/Ember.Templates.helpers.html#method_each-in) может иметь сопоставление `{{else}}`. Если объект пустой, несуществующий или неопределенный, то будет отображено содержимое этого блока:
-
-```handlebars
-{{#each-in people as |name, person|}}
+```hbs
+{{#each-in people as |name person|}}
   Hello, {{name}}! You are {{person.age}} years old.
 {{else}}
   Sorry, nobody is here.
-{{/each}}
+{{/each-in}}
 ```
