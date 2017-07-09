@@ -9,13 +9,21 @@
 
 ## Установка Ember
 
-Можно установить Ember с помощью одной команды в npm, диспетчере пакетов Node.js. Введите в терминале следующее:
+Ember можно установить с помощью одной команды npm - диспетчере пакетов Node.js или [Yarn](https://yarnpkg.com/lang/en/). Введите в терминале следующее:
 
+С помощью npm
 ```bash
-npm install -g ember-cli@2.8
+npm install -g ember-cli
 ```
 
-У вас нет npm? [Узнайте здесь, как установить Node.js и npm](https://docs.npmjs.com/getting-started/installing-node). Чтобы ознакомиться с полным списком зависимостей, необходимых для проекта Ember CLI, посмотрите раздел [Установка Ember](http://emjs.ru/v2/getting-started/) в руководстве.
+У вас нет npm? [Узнайте здесь, как установить Node.js и npm](https://docs.npmjs.com/getting-started/installing-node).
+
+Или с помощью yarn
+```bash
+yarn add global ember-cli
+```
+
+Чтобы ознакомиться с полным списком зависимостей, необходимых для проекта Ember CLI, посмотрите раздел [Установка Ember](http://emjs.ru/v2/getting-started/) в руководстве.
 
 ## Создание нового приложения
 
